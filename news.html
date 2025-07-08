@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>실시간 경제 뉴스</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: #4a5568;
+      color: white;
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      width: 40px;
+      height: 40px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #4a5568;
+      font-size: 18px;
+    }
+
+    .header-info h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .header-info .subtitle {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .header-right {
+      text-align: right;
+    }
+
+    .market-info {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .market-change {
+      font-size: 14px;
+      color: #ff6b6b;
+    }
+
+    .nav-section {
+      background: #f8f9fa;
+      padding: 20px 32px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .nav-btn {
+      padding: 8px 16px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-btn.active {
+      background: #3182ce;
+      color: white;
+      border-color: #3182ce;
+    }
+
+    .nav-btn:hover {
+      background: #f7fafc;
+      border-color: #cbd5e0;
+    }
+
+    .nav-btn.active:hover {
+      background: #2c5282;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px;
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: #718096;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .stat-status {
+      font-size: 12px;
+      color: #f6ad55;
+      font-weight: 500;
+    }
+
+    .controls {
+      padding: 20px 32px;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .control-left {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .period-select {
+      padding: 8px 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .refresh-btn {
+      padding: 8px 16px;
+      background: #3182ce;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .refresh-btn:hover {
+      background: #2c5282;
+    }
+
+    .refresh-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .loading-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #ffffff;
+      border-top: 2px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .status {
+      font-size: 14px;
+      color: #718096;
+    }
+
+    .status.success {
+      color: #38a169;
+    }
+
+    .status.error {
+      color: #e53e3e;
+    }
+
+    .news-container {
+      padding: 32px;
+      background: white;
+    }
+
+    .news-item {
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .news-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .news-source {
+      display: inline-block;
+      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+      color: white;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .news-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #2c3e50;
+      text-decoration: none;
+      line-height: 1.4;
+      display: block;
+      margin-bottom: 15px;
+      transition: color 0.3s ease;
+    }
+
+    .news-title:hover {
+      color: #3498db;
+    }
+
+    .summary-btn {
+      background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3);
+    }
+
+    .summary-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    }
+
+    .summary-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .summary {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      border-left: 4px solid #007bff;
+      font-style: italic;
+      color: #495057;
+      line-height: 1.6;
+      display: none;
+    }
+
+    .summary.show {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6c757d;
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      opacity: 0.5;
+      margin-bottom: 20px;
+    }
+
+    .error-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #dc3545;
+    }
+
+    .error-state svg {
+      width: 80px;
+      height: 80px;
+      opacity: 0.5;
+      margin-bottom: 20px;
+    }
+
+    .retry-btn {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+      margin-top: 15px;
+    }
+
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        border-radius: 15px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .controls {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .news-container {
+        padding: 20px;
+      }
+
+      .news-item {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📈 실시간 경제 뉴스</h1>
+      <p>최신 경제 동향을 한눈에 확인하세요</p>
+    </div>
+
+    <div class="controls">
+      <button class="refresh-btn" id="refresh-btn">
+        <span class="btn-text">새로고침</span>
+      </button>
+      <div class="status" id="status">
+        뉴스를 불러오는 중...
+      </div>
+    </div>
+
+    <div class="news-container" id="news-container">
+      <!-- 뉴스 목록이 여기에 표시됩니다 -->
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
